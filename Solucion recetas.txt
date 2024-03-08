@@ -1,0 +1,69 @@
+Escribe las consultas XQuery que permitan obtener la siguiente información:
+1. Una lista que contiene, para cada receta, el elemento <titulo> de la receta y un elemento <calorias> que contenga el número de calorías.
+
+for $receta in /recetas/receta
+  return concat(($receta/titulo), " ", ($receta/nutricion/@caloria))
+
+2. Una lista similar a la primera, ordenada según las calorías.
+for $receta in /recetas/receta
+let $titulo := $receta/titulo
+let $calorias := xs:integer($receta/nutricion/@caloria)
+order by $calorias ascending
+return
+  concat($titulo, ": ", $calorias)
+
+3. Una lista similar a la primera, ordenada alfabéticamente según el título.
+
+for $receta in /recetas/receta
+ order by $receta/titulo
+return
+ data($receta/titulo)
+
+4. Una lista similar a la primera, ordenada según el contenido de grasa.
+for $receta in /recetas/receta
+let $titulo := $receta/titulo
+let $grasas := xs:integer($receta/nutricion/@grasa)
+order by $grasas ascending
+return
+  concat($titulo, ": ", $grasas)
+
+5. Una lista similar a la primera, con el título como atributo y las calorías como contenido.
+for $receta in /recetas/receta
+    let $titulo := $receta/titulo
+    let $calorias := $receta/nutricion/@caloria
+    return
+    <receta titulo="{$titulo}" calorias="{$calorias}"/>
+
+6. Una lista que contenga para cada receta, el título como atributo y cada uno de los ingredientes de nivel superior (sin añadir los ingredientes que están dentro de otros ingredientes).
+
+for $receta in /recetas/receta
+    let $titulo := $receta/titulo
+    return
+    <receta titulo="{$titulo}">
+     {
+      for $ingrediente in $receta/ingrediente[not(ingrediente)]
+        return $ingrediente
+      }
+      </receta>
+
+7. Una lista con cada una de las recetas que contengan el ingrediente harina. Poner el título de la receta como atributo del elemento receta.
+
+ for $receta in /recetas/receta[ingrediente[contains(@nombre, "harina")]]
+    let $titulo := $receta/titulo
+    return
+    <receta titulo="{$titulo}">
+        {$receta/ingrediente[contains(@nombre, "harina")]}
+    </receta>
+
+8. Una lista de todas aquellas recetas que tengan un ingrediente llamado relleno y este contenga en su interior más de 5 elementos ingrediente. 
+* La lista resultante estará formada por elementos receta que contienen un atributo titulo con el valor del elemento titulo de la receta. 
+* Además, dentro de cada elemento receta habrá elementos ingrediente con el nombre de cada uno de los ingredientes.
+
+<recetas>{
+    for $receta in /recetas/receta[ingrediente[@nombre="relleno" and count(ingrediente) > 5]]
+    let $titulo := $receta/titulo
+    return
+    <receta titulo="{$titulo}">
+        {$receta/ingrediente[@nombre ne "preparación"]/ingrediente/data(@nombre)}
+    </receta>
+}</recetas>

@@ -1,0 +1,76 @@
+Escribe las consultas XQuery que permitan obtener la siguiente información:
+1. Título y editorial de todos los libros.
+* Los datos de cada libro deben estar dentro de un elemento <libro>.
+* El título y la editorial de cada libro deben estar separados por un guión medio (-).
+
+for $libro in /biblioteca/libros/libro
+return
+  concat($libro/titulo,text(), "-",$libro/editorial/text())
+
+2. El título de todos los libros de menos de 400 páginas.
+* Se debe obtener únicamente los datos, sin etiquetas.
+urn
+for $libro in /biblioteca/libros/libro[paginas < 400]
+ return
+  data($libro/titulo)
+3. La cantidad de libros de más de 400 páginas.
+count (/biblioteca/libros/libro/paginas > 400)
+
+4. Una lista HTML con el título de los libros de la editorial O'Reilly Media ordenados por título.
+for $libro in /biblioteca/libros/libro
+where[editorial = "O'Reilly Media"]  
+ order by $libro/titulo
+  return
+   data($libro/titulo)
+---------------------------------------------------
+<html>
+<head><title>Libros de O'Reilly Media</title></head>
+<body>
+  <h1>Libros de O'Reilly Media</h1>
+  <ul>
+  {
+    for $libro in /biblioteca/libros/libro
+    where $libro/editorial = "O'Reilly Media"
+    order by $libro/titulo
+    return
+      <li>{data($libro/titulo)}</li>
+  }
+  </ul>
+</body>
+</html>
+
+5. Título y editorial de los libros de 2018 y 2019.
+* Los datos de cada libro deben estar dentro de un elemento <libro>.
+* El título y la editorial deben ir dentro de los elementos <titulo> y <editorial> respectivamente.
+
+for $libro in /biblioteca/libros/libro
+where $libro/@publicación = "2018" or $libro /@publicacion = "2019"
+ return
+ <libro>
+  <titulo>{data($libro/titulo)}</titulo>
+  <editorial>{data($libro/editorial)}</editorial>
+   </libro>
+
+6. Título y editorial de los libros con más de un autor.
+* Los datos de cada libro deben estar dentro de un elemento <libro>.
+* El título y la editorial deben ir dentro de los elementos <titulo> y <editorial> respectivamente.
+
+for $libro in /biblioteca/libros/libro
+where count($libro/autor) > 1
+ return
+  concat(data($libro/titulo), "-", data($libro/editorial))
+
+7. Título y año de publicación de los libros que tienen versión electrónica.
+* Los datos de cada libro deben estar dentro de un elemento <libro>.
+* El título y el año de publicación deben ir dentro de los elementos <titulo> y <fecha-publicacion> respectivamente.
+
+for $libro in /biblioteca/libros/libro[edicionElectronica = "true"]
+ return
+  concat(data($libro/titulo), "-", data($libro/@publicacion))
+
+8. Título de los libros que no tienen versión electrónica.
+* Se debe obtener únicamente los datos, sin etiquetas.
+
+for $libro in /biblioteca/libros/libro[not(edicionElectronica = "true")]
+ return
+  data($libro/titulo)
